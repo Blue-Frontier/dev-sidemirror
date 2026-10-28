@@ -2,13 +2,13 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "dev-sidemirror",
   "compatibility_date": "2026-08-17",
-  "pages_build_output_dir": "./dist",
   "observability": {
     "enabled": true,
   },
   "upload_source_maps": true,
-  "r2_buckets": [{ "binding": "R2", "bucket_name": "mirrors" }],
-  "kv_namespaces": [{ "binding": "KV", "id": "kv_dev_sidemirror" }],
+  // 生产配置（构建命令、输出目录、KV/R2 绑定、环境变量）在 Cloudflare Dashboard 里维护。
+  // 这里不写 pages_build_output_dir，文件只用于本地开发；本地绑定通过 `npm run dev:pages` 的
+  // --kv / --r2 参数注入。
   "vars": {
     "GITHUB_REPO": "docmirror/dev-sidecar",
     "R2_MAX_CAPACITY": "10737418240",

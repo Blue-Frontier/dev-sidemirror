@@ -57,7 +57,7 @@ npm install
 创建 R2 存储桶：
 
 ```bash
-wrangler r2 bucket create mirrors
+wrangler r2 bucket create dev-sidecar
 ```
 
 创建 KV 命名空间：
@@ -66,30 +66,24 @@ wrangler r2 bucket create mirrors
 wrangler kv namespace create KV
 ```
 
-### 3. 配置环境变量
+### 3. 在 Dashboard 中配置构建与绑定
 
-在 `wrangler.jsonc` 中更新你的配置，或在 Cloudflare Dashboard 中设置：
+生产配置以 Cloudflare Dashboard 为准，仓库里的 `wrangler.jsonc` 只服务本地开发（没有 `pages_build_output_dir`，因此不会覆盖 Dashboard 设置）。
 
-```jsonc
-{
-  "vars": {
-    "GITHUB_REPO": "owner/repo", // 要镜像的 GitHub 仓库
-    "R2_MAX_CAPACITY": "10737418240", // R2 最大容量（字节，默认 10GB）
-    "KEEP_RELEASES_COUNT": "3", // 保留缓存的最近版本数
-  },
-}
-```
+进入 Cloudflare Dashboard > Pages > 你的项目：
 
-### 4. 在 Dashboard 中配置绑定
+- Build command：`npm run build`
+- Build output directory：`dist`
+- Production branch：`master`
 
-部署后，进入 Cloudflare Dashboard > Pages > 你的项目 > Settings > Functions：
+然后在 Settings > Functions > Bindings 里绑定：
 
 | 绑定类型     | 变量名 | 说明                        |
 | ------------ | ------ | --------------------------- |
 | R2 Bucket    | `R2`   | 用于文件缓存的 R2 存储桶    |
 | KV Namespace | `KV`   | 用于下载计数和发布缓存的 KV |
 
-### 5. 在 Dashboard 中设置环境变量
+### 4. 在 Dashboard 中设置环境变量
 
 进入 Cloudflare Dashboard > Pages > 你的项目 > Settings > Environment variables：
 
@@ -104,7 +98,8 @@ wrangler kv namespace create KV
 ## 开发
 
 ```bash
-npm run dev
+npm run dev         # 只跑前端（/api 请求不可用）
+npm run dev:pages   # 构建后用 Pages 本地环境跑 Functions，并绑定本地 KV/R2
 ```
 
 ## 构建
@@ -121,11 +116,13 @@ npm run preview
 
 ## 部署
 
-```bash
-npm run deploy
-```
+推送到 `master` 即可，Cloudflare Pages 会自动构建部署（构建命令与绑定在 Dashboard 里配置，见上文）。
 
-或连接你的 GitHub 仓库到 Cloudflare Pages 实现自动部署。
+手动部署：
+
+```bash
+npx wrangler pages deploy dist
+```
 
 ## API 端点
 

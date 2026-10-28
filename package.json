@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:pages": "npm run build && wrangler pages dev dist --kv KV --r2 R2",
     "build": "vite build",
-    "preview": "npm run build && wrangler pages dev",
+    "preview": "npm run build && wrangler pages dev dist",
     "format": "prettier --write --experimental-cli src/",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
