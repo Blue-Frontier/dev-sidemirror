@@ -5,14 +5,15 @@ import { useReleases } from '@/composables/useReleases'
 
 const props = defineProps({
   release: { type: Object, required: true },
+  latestTag: { type: String, default: null },
   targetOS: { type: String, default: null },
   targetArch: { type: String, default: null },
 })
 
-const { getRecommendedFile, latestStable } = useReleases()
+const { getRecommendedFile } = useReleases()
 
 const isLatestStable = computed(() => {
-  return latestStable.value?.tagName === props.release.tagName
+  return props.latestTag !== null && props.latestTag === props.release.tagName
 })
 
 const recommendedFile = computed(() => {

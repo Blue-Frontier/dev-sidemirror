@@ -37,6 +37,34 @@ describe('parseFilename', () => {
     expect(result.os).toBeNull()
     expect(result.arch).toBeNull()
   })
+
+  it('parses darwin as macos, not windows', () => {
+    const result = parseFilename('DevSidecar-2.3.3-darwin-arm64.zip')
+    expect(result.os).toBe('macos')
+    expect(result.arch).toBe('arm64')
+  })
+
+  it('parses bare .exe as windows', () => {
+    const result = parseFilename('DevSidecar-2.3.3-x64.exe')
+    expect(result.os).toBe('windows')
+  })
+
+  it('parses x86_64 as x64', () => {
+    const result = parseFilename('DevSidecar-2.3.3-linux-x86_64.deb')
+    expect(result.os).toBe('linux')
+    expect(result.arch).toBe('x64')
+  })
+
+  it('does not treat "all" inside a word as universal', () => {
+    const result = parseFilename('small-installer.exe')
+    expect(result.os).toBe('windows')
+    expect(result.arch).toBeNull()
+  })
+
+  it('parses universal suffix', () => {
+    const result = parseFilename('DevSidecar-2.3.3-universal.dmg')
+    expect(result.arch).toBe('universal')
+  })
 })
 
 describe('getOSIcon', () => {

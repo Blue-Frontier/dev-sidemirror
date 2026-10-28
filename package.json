@@ -9,6 +9,7 @@
     "preview": "npm run build && wrangler pages dev",
     "format": "prettier --write --experimental-cli src/",
     "test": "vitest run",
+    "typecheck": "tsc --noEmit",
     "deploy": "npm run build && wrangler pages deploy",
     "cf-typegen": "wrangler types",
     "prepare": "husky"
@@ -23,6 +24,7 @@
     "lint-staged": "^17.3.0",
     "prettier": "3.9.5",
     "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.3",
     "vite": "^8.1.5",
     "vite-plugin-vue-devtools": "^8.1.5",
     "vitest": "^4.1.10",

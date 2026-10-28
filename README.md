@@ -20,9 +20,9 @@ dev-sidemirror/
 │   └── api/
 │       ├── releases.ts          # GET /api/releases - 列出所有发布版本
 │       ├── download/
-│       │   └── [...version].ts  # GET /api/download/:version/:file - 下载/代理文件
+│       │   └── [[version]].ts   # GET /api/download/:version/:file - 下载/代理文件
 │       ├── stats.ts             # GET /api/stats - 下载统计
-│       └── cleanup.ts           # GET /api/cleanup - 清理旧版本缓存
+│       └── cleanup.ts           # GET|POST /api/cleanup - 清理旧版本缓存（需 token）
 ├── src/                         # Vue 3 前端
 │   ├── App.vue
 │   ├── components/
@@ -93,11 +93,13 @@ wrangler kv namespace create KV
 
 进入 Cloudflare Dashboard > Pages > 你的项目 > Settings > Environment variables：
 
-| 变量名                | 说明                     | 示例                    |
-| --------------------- | ------------------------ | ----------------------- |
-| `GITHUB_REPO`         | GitHub 仓库 (owner/repo) | `docmirror/dev-sidecar` |
-| `R2_MAX_CAPACITY`     | R2 最大容量（字节）      | `10737418240` (10GB)    |
-| `KEEP_RELEASES_COUNT` | 保留缓存的版本数         | `3`                     |
+| 变量名                | 说明                                          | 示例                    |
+| --------------------- | --------------------------------------------- | ----------------------- |
+| `GITHUB_REPO`         | GitHub 仓库 (owner/repo)                      | `docmirror/dev-sidecar` |
+| `R2_MAX_CAPACITY`     | R2 最大容量（字节）                           | `10737418240` (10GB)    |
+| `KEEP_RELEASES_COUNT` | 保留缓存的版本数                              | `3`                     |
+| `GITHUB_TOKEN`        | GitHub Token（建议配置，避免 60 次/小时限流） | `ghp_xxx`               |
+| `CLEANUP_TOKEN`       | 清理接口口令（不配置则接口返回 503）          | 随机字符串              |
 
 ## 开发
 
@@ -127,12 +129,12 @@ npm run deploy
 
 ## API 端点
 
-| 端点                                   | 说明                                |
-| -------------------------------------- | ----------------------------------- |
-| `GET /api/releases`                    | 列出所有发布版本（KV 缓存 5 分钟）  |
-| `GET /api/download/:version/:filename` | 下载发布文件（从 R2 或代理 GitHub） |
-| `GET /api/stats`                       | 获取下载统计                        |
-| `GET /api/cleanup`                     | 清理旧版本缓存                      |
+| 端点                                   | 说明                                                                   |
+| -------------------------------------- | ---------------------------------------------------------------------- |
+| `GET /api/releases`                    | 列出所有发布版本（KV 缓存 5 分钟，失败时回退到上一次数据）             |
+| `GET /api/download/:version/:filename` | 下载发布文件（从 R2 或代理 GitHub，支持 Range 断点续传）               |
+| `GET /api/stats`                       | 获取下载统计                                                           |
+| `GET\|POST /api/cleanup`               | 清理旧版本缓存，需 `Authorization: Bearer $CLEANUP_TOKEN` 或 `?token=` |
 
 ## 工作原理
 
@@ -141,6 +143,7 @@ npm run deploy
 3. 下载文件时：
    - 如果 R2 中已缓存：直接返回（缓存命中）
    - 如果未缓存：从 GitHub 代理下载，然后缓存到 R2
-4. 下载次数记录在 KV 中
+   - 超过 50 MB 的文件不写缓存，直接透传（Workers 单实例内存上限 128 MB）
+4. 下载次数记录在 KV 中，并用同一个索引做 LRU 淘汰判断
 5. R2 存储满时，自动淘汰下载次数最少的文件（LRU）
-6. 超过 `KEEP_RELEASES_COUNT` 的旧版本会自动清理
+6. 超过 `KEEP_RELEASES_COUNT` 的旧版本会由清理接口或定时任务删除

@@ -12,7 +12,11 @@ const showPrereleases = ref(false)
 
 const filteredReleases = computed(() => {
   if (showPrereleases.value) return props.releases
-  return props.releases.filter((r) => !r.isPrerelease)
+  return props.releases.filter((release) => !release.isPrerelease)
+})
+
+const latestTag = computed(() => {
+  return props.releases.find((release) => !release.isPrerelease)?.tagName ?? null
 })
 </script>
 
@@ -42,6 +46,7 @@ const filteredReleases = computed(() => {
         v-for="release in filteredReleases"
         :key="release.tagName"
         :release="release"
+        :latestTag="latestTag"
         :targetOS="detectedOS"
         :targetArch="detectedArch"
       />

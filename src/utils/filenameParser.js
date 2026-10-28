@@ -1,13 +1,14 @@
+// macOS 放最前面：darwin 里含 "win"，先匹配 windows 会误判
 const OS_PATTERNS = [
-  { pattern: /linux/i, os: 'linux' },
-  { pattern: /windows|win\d*/i, os: 'windows' },
-  { pattern: /macos|mac|darwin|osx/i, os: 'macos' },
+  { pattern: /macos|mac\s?os|darwin|osx|\.dmg$/i, os: 'macos' },
+  { pattern: /linux|\.deb$|\.rpm$|\.appimage$|\.flatpak$/i, os: 'linux' },
+  { pattern: /windows|\bwin(?:32|64)?\b|\.exe$|\.msi$/i, os: 'windows' },
 ]
 
 const ARCH_PATTERNS = [
-  { pattern: /x64|amd64/i, arch: 'x64' },
-  { pattern: /arm64|aarch64/i, arch: 'arm64' },
-  { pattern: /universal|all/i, arch: 'universal' },
+  { pattern: /\b(?:x64|amd64|x86[_-]64)\b/i, arch: 'x64' },
+  { pattern: /\b(?:arm64|aarch64)\b/i, arch: 'arm64' },
+  { pattern: /\b(?:universal|all)\b/i, arch: 'universal' },
 ]
 
 export function parseFilename(filename) {
@@ -29,11 +30,6 @@ export function parseFilename(filename) {
   }
 
   return { os, arch }
-}
-
-export function getFileExtension(filename) {
-  const match = filename.match(/\.(tar\.gz|tgz|zip|dmg|deb|rpm|msi|exe|AppImage|flatpak)$/i)
-  return match ? match[0] : ''
 }
 
 export function getOSIcon(os) {

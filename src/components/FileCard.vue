@@ -1,12 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import {
-  parseFilename,
-  getFileExtension,
-  getOSIcon,
-  getOSLabel,
-  getArchLabel,
-} from '@/utils/filenameParser'
+import { parseFilename, getOSIcon, getOSLabel, getArchLabel } from '@/utils/filenameParser'
 
 const props = defineProps({
   asset: { type: Object, required: true },
@@ -17,7 +11,6 @@ const props = defineProps({
 })
 
 const parsed = computed(() => parseFilename(props.asset.name))
-const extension = computed(() => getFileExtension(props.asset.name))
 const osIcon = computed(() => getOSIcon(parsed.value.os))
 const osLabel = computed(() => getOSLabel(parsed.value.os))
 const archLabel = computed(() => getArchLabel(parsed.value.arch))
@@ -31,7 +24,7 @@ const formattedSize = computed(() => {
 })
 
 const downloadUrl = computed(() => {
-  return `/api/download/${props.version}/${props.asset.name}`
+  return `/api/download/${encodeURIComponent(props.version)}/${encodeURIComponent(props.asset.name)}`
 })
 </script>
 
