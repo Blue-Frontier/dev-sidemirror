@@ -62,6 +62,8 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       name: release.name || release.tag_name,
       publishedAt: release.published_at,
       isPrerelease: release.prerelease,
+      body: release.body ?? '',
+      htmlUrl: release.html_url ?? null,
       releaseAssets: (release.assets || []).map((asset: any) => ({
         name: asset.name,
         size: asset.size,

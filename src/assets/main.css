@@ -40,3 +40,110 @@ a {
 a:hover {
   color: var(--accent-hover);
 }
+
+/* GitHub release notes (rendered markdown) */
+.release-notes {
+  font-size: 0.8125rem;
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+.release-notes--collapsed {
+  max-height: 10rem;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent);
+  mask-image: linear-gradient(to bottom, #000 70%, transparent);
+}
+
+.release-notes > :first-child {
+  margin-top: 0;
+}
+
+.release-notes h1,
+.release-notes h2,
+.release-notes h3,
+.release-notes h4 {
+  margin: 1rem 0 0.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.release-notes h3 {
+  font-size: 0.875rem;
+}
+
+.release-notes h4 {
+  font-size: 0.8125rem;
+}
+
+.release-notes p {
+  margin: 0.5rem 0;
+}
+
+.release-notes ul,
+.release-notes ol {
+  margin: 0.5rem 0;
+  padding-left: 1.25rem;
+}
+
+.release-notes ul {
+  list-style: disc;
+}
+
+.release-notes ol {
+  list-style: decimal;
+}
+
+.release-notes li {
+  margin: 0.25rem 0;
+}
+
+.release-notes strong {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.release-notes a {
+  text-decoration: underline;
+  word-break: break-word;
+}
+
+.release-notes code {
+  padding: 0.1rem 0.3rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.25rem;
+  background-color: var(--bg-secondary);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.75rem;
+}
+
+.release-notes pre {
+  margin: 0.75rem 0;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  background-color: var(--bg-secondary);
+  overflow-x: auto;
+}
+
+.release-notes pre code {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.release-notes blockquote {
+  margin: 0.75rem 0;
+  padding-left: 0.75rem;
+  border-left: 3px solid var(--border-color);
+}
+
+.release-notes img {
+  max-width: 100%;
+  height: auto;
+}
+
+.release-notes hr {
+  margin: 1rem 0;
+  border-color: var(--border-color);
+}

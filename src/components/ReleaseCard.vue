@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import FileList from './FileList.vue'
+import ReleaseNotes from './ReleaseNotes.vue'
 import { useReleases } from '@/composables/useReleases'
 
 const props = defineProps({
@@ -65,6 +66,13 @@ const fileCount = computed(() => props.release.releaseAssets?.length || 0)
         </p>
       </div>
     </div>
+
+    <ReleaseNotes
+      v-if="release.body"
+      class="mt-4"
+      :body="release.body"
+      :html-url="release.htmlUrl"
+    />
 
     <FileList
       v-if="fileCount > 0"
