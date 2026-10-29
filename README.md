@@ -131,6 +131,7 @@ npx wrangler pages deploy dist
 | `GET /api/releases`                    | 列出所有发布版本（KV 缓存 5 分钟，失败时回退到上一次数据）             |
 | `GET /api/download/:version/:filename` | 下载发布文件（从 R2 或代理 GitHub，支持 Range 断点续传）               |
 | `GET /api/stats`                       | 获取下载统计                                                           |
+| `GET /api/health`                      | 诊断用：返回环境变量是否注入、绑定是否存在、GitHub 侧状态与额度        |
 | `GET\|POST /api/cleanup`               | 清理旧版本缓存，需 `Authorization: Bearer $CLEANUP_TOKEN` 或 `?token=` |
 
 ## 工作原理
