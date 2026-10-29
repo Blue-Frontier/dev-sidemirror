@@ -1,0 +1,14 @@
+name: Status check
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Record a health sample
+        run: |
+          curl -fsS --max-time 30 "https://dev-sidemirror.bestar.de5.net/api/health?record=1"

@@ -126,13 +126,22 @@ npx wrangler pages deploy dist
 
 ## API 端点
 
-| 端点                                   | 说明                                                                   |
-| -------------------------------------- | ---------------------------------------------------------------------- |
-| `GET /api/releases`                    | 列出所有发布版本（KV 缓存 5 分钟，失败时回退到上一次数据）             |
-| `GET /api/download/:version/:filename` | 下载发布文件（从 R2 或代理 GitHub，支持 Range 断点续传）               |
-| `GET /api/stats`                       | 获取下载统计                                                           |
-| `GET /api/health`                      | 诊断用：返回环境变量是否注入、绑定是否存在、GitHub 侧状态与额度        |
-| `GET\|POST /api/cleanup`               | 清理旧版本缓存，需 `Authorization: Bearer $CLEANUP_TOKEN` 或 `?token=` |
+| 端点                                   | 说明                                                                                            |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `GET /api/releases`                    | 列出所有发布版本（KV 缓存 5 分钟，失败时回退到上一次数据）                                      |
+| `GET /api/download/:version/:filename` | 下载发布文件（从 R2 或代理 GitHub，支持 Range 断点续传）                                        |
+| `GET /api/stats`                       | 获取下载统计                                                                                    |
+| `GET /api/health`                      | 诊断用：返回环境变量是否注入、绑定是否存在、GitHub 侧状态与额度；`?record=1` 时记录一次状态采样 |
+| `GET /api/status`                      | 状态页数据：24 小时 / 7 天 / 30 天的可用率、平均延迟与最近 24 小时采样                          |
+| `GET\|POST /api/cleanup`               | 清理旧版本缓存，需 `Authorization: Bearer $CLEANUP_TOKEN` 或 `?token=`                          |
+
+## 状态页
+
+访问 `/status` 可以看到各组件状态、24 小时 / 7 天 / 30 天的可用率和最近 24 小时的检查条带。
+
+历史数据来自 `.github/workflows/status-check.yml`，它每 15 分钟请求一次 `/api/health?record=1`，结果写入 KV 的 `status:rollup`（保留 35 天，5 分钟内重复调用不会重复记录）。也可以在 Actions 页面手动触发一次。
+
+同一个仓库 60 天没有活动时 GitHub 会自动停用定时工作流，届时在 Actions 页面点一次 Enable 即可。
 
 ## 工作原理
 
