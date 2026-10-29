@@ -11,14 +11,22 @@ jobs:
     steps:
       - name: Record a health sample
         run: |
-          for attempt in 1 2 3; do
-            code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 \
-              "https://dev-sidemirror.bestar.de5.net/api/health?record=1" || true)
-            echo "attempt $attempt: HTTP $code"
-            if [ "$code" = "200" ]; then
-              exit 0
-            fi
-            sleep 5
+          urls="https://dev-sidemirror.bestar.de5.net/api/health?record=1
+          https://dev-sidemirror.pages.dev/api/health?record=1"
+
+          for url in $urls; do
+            for attempt in 1 2 3; do
+              code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 "$url" || true)
+              echo "$url attempt $attempt: HTTP $code"
+              if [ "$code" = "200" ]; then
+                exit 0
+              fi
+              if [ "$attempt" = "1" ]; then
+                curl -sS -o /dev/null -D - --max-time 30 "$url" | head -n 20 || true
+              fi
+              sleep 5
+            done
           done
-          echo "failed to record a health sample after 3 attempts"
+
+          echo "failed to record a health sample"
           exit 1
