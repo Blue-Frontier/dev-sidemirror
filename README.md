@@ -141,7 +141,20 @@ npx wrangler pages deploy dist
 
 历史数据来自 `.github/workflows/status-check.yml`，它每 15 分钟请求一次 `/api/health?record=1`，结果写入 KV 的 `status:rollup`（保留 35 天，5 分钟内重复调用不会重复记录）。也可以在 Actions 页面手动触发一次。
 
-同一个仓库 60 天没有活动时 GitHub 会自动停用定时工作流，届时在 Actions 页面点一次 Enable 即可。
+同一个仓库 60 天没有活动时 GitHub 会自动停用定时工作流，届时在 Actions 页面点一次 Enable 即可。启用了整站人机验证后，需要在本仓库的 Actions secrets 里加 `STATUS_TOKEN`，工作流会带上 `x-status-token` 头访问 `/api/health`。
+
+## 整站人机验证（Turnstile）
+
+配置以下环境变量后，未验证的访客会先看到 Turnstile 验证页；通过后写入一个签名的 HttpOnly cookie（7 天有效），之后访问页面、API 和下载都凭该 cookie 放行。
+
+| 变量                   | 说明                                             |
+| ---------------------- | ------------------------------------------------ |
+| `TURNSTILE_SITE_KEY`   | Turnstile 小组件的 Site Key（公开）              |
+| `TURNSTILE_SECRET_KEY` | Turnstile 的 Secret Key（Secret）                |
+| `SESSION_SECRET`       | 可选，cookie 签名密钥；不填时用 Turnstile Secret |
+| `STATUS_TOKEN`         | 可选，定时检查绕过验证用的口令                   |
+
+三项 Turnstile 相关变量没有配齐时，验证闸门自动关闭，站点照常访问。`/api/verify` 与 `/favicon.ico` 不参与拦截。
 
 ## 工作原理
 
