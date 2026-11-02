@@ -4,6 +4,7 @@ interface Env {
   GITHUB_REPO: string
   R2_MAX_CAPACITY?: string
   GITHUB_TOKEN?: string
+  DOWNLOAD_PROXY?: string
 }
 
 const COUNT_INDEX_KEY = 'counts:index'
@@ -18,6 +19,13 @@ interface ResolvedDownload {
 
 function jsonError(status: number, message: string): Response {
   return Response.json({ error: message }, { status })
+}
+
+function buildRedirectTarget(env: Env, url: string): string | null {
+  const proxy = env.DOWNLOAD_PROXY?.trim()
+  if (!proxy) return null
+  if (proxy === 'direct') return url
+  return proxy.endsWith('/') ? `${proxy}${url}` : `${proxy}/${url}`
 }
 
 function githubHeaders(env: Env, extra: Record<string, string> = {}): Record<string, string> {
@@ -223,6 +231,21 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     return resolved.status === 404
       ? jsonError(404, 'File not found')
       : jsonError(502, 'GitHub API request failed')
+  }
+
+  const redirectTarget = buildRedirectTarget(env, resolved.url)
+  if (redirectTarget) {
+    waitUntil(
+      bumpCount(env, key).catch((error) => console.error('failed to count download', key, error)),
+    )
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: redirectTarget,
+        'Cache-Control': 'no-store',
+        'X-Download-Mode': 'redirect',
+      },
+    })
   }
 
   let download: Response

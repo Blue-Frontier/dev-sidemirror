@@ -87,13 +87,14 @@ wrangler kv namespace create KV
 
 进入 Cloudflare Dashboard > Pages > 你的项目 > Settings > Environment variables：
 
-| 变量名                | 说明                                          | 示例                    |
-| --------------------- | --------------------------------------------- | ----------------------- |
-| `GITHUB_REPO`         | GitHub 仓库 (owner/repo)                      | `docmirror/dev-sidecar` |
-| `R2_MAX_CAPACITY`     | R2 最大容量（字节）                           | `10737418240` (10GB)    |
-| `KEEP_RELEASES_COUNT` | 保留缓存的版本数                              | `3`                     |
-| `GITHUB_TOKEN`        | GitHub Token（建议配置，避免 60 次/小时限流） | `ghp_xxx`               |
-| `CLEANUP_TOKEN`       | 清理接口口令（不配置则接口返回 503）          | 随机字符串              |
+| 变量名                | 说明                                                                 | 示例                    |
+| --------------------- | -------------------------------------------------------------------- | ----------------------- |
+| `GITHUB_REPO`         | GitHub 仓库 (owner/repo)                                             | `docmirror/dev-sidecar` |
+| `R2_MAX_CAPACITY`     | R2 最大容量（字节）                                                  | `10737418240` (10GB)    |
+| `KEEP_RELEASES_COUNT` | 保留缓存的版本数                                                     | `3`                     |
+| `GITHUB_TOKEN`        | GitHub Token（建议配置，避免 60 次/小时限流）                        | `ghp_xxx`               |
+| `CLEANUP_TOKEN`       | 清理接口口令（不配置则接口返回 503）                                 | 随机字符串              |
+| `DOWNLOAD_PROXY`      | 未命中缓存的下载改为 302 到该地址前缀；填 `direct` 则直接跳到 GitHub | `https://gh-proxy.com/` |
 
 ## 开发
 
