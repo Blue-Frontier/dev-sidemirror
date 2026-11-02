@@ -87,14 +87,13 @@ wrangler kv namespace create KV
 
 进入 Cloudflare Dashboard > Pages > 你的项目 > Settings > Environment variables：
 
-| 变量名                | 说明                                                                 | 示例                    |
-| --------------------- | -------------------------------------------------------------------- | ----------------------- |
-| `GITHUB_REPO`         | GitHub 仓库 (owner/repo)                                             | `docmirror/dev-sidecar` |
-| `R2_MAX_CAPACITY`     | R2 最大容量（字节）                                                  | `10737418240` (10GB)    |
-| `KEEP_RELEASES_COUNT` | 保留缓存的版本数                                                     | `3`                     |
-| `GITHUB_TOKEN`        | GitHub Token（建议配置，避免 60 次/小时限流）                        | `ghp_xxx`               |
-| `CLEANUP_TOKEN`       | 清理接口口令（不配置则接口返回 503）                                 | 随机字符串              |
-| `DOWNLOAD_PROXY`      | 未命中缓存的下载改为 302 到该地址前缀；填 `direct` 则直接跳到 GitHub | `https://gh-proxy.com/` |
+| 变量名                | 说明                                          | 示例                    |
+| --------------------- | --------------------------------------------- | ----------------------- |
+| `GITHUB_REPO`         | GitHub 仓库 (owner/repo)                      | `docmirror/dev-sidecar` |
+| `R2_MAX_CAPACITY`     | R2 最大容量（字节）                           | `10737418240` (10GB)    |
+| `KEEP_RELEASES_COUNT` | 保留缓存的版本数                              | `3`                     |
+| `GITHUB_TOKEN`        | GitHub Token（建议配置，避免 60 次/小时限流） | `ghp_xxx`               |
+| `CLEANUP_TOKEN`       | 清理接口口令（不配置则接口返回 503）          | 随机字符串              |
 
 ## 开发
 
@@ -164,7 +163,7 @@ npx wrangler pages deploy dist
 3. 下载文件时：
    - 如果 R2 中已缓存：直接返回（缓存命中）
    - 如果未缓存：从 GitHub 代理下载，然后缓存到 R2
-   - 超过 50 MB 的文件不写缓存，直接透传（Workers 单实例内存上限 128 MB）
+   - 超过 150 MB 的文件不写缓存，直接透传（缓存由独立后台抓取写入，不占用 Worker 内存）
 4. 下载次数记录在 KV 中，并用同一个索引做 LRU 淘汰判断
 5. R2 存储满时，自动淘汰下载次数最少的文件（LRU）
 6. 超过 `KEEP_RELEASES_COUNT` 的旧版本会由清理接口或定时任务删除

@@ -4,12 +4,12 @@ interface Env {
   GITHUB_REPO: string
   R2_MAX_CAPACITY?: string
   GITHUB_TOKEN?: string
-  DOWNLOAD_PROXY?: string
 }
 
 const COUNT_INDEX_KEY = 'counts:index'
-// Workers 内存上限 128MB，超过这个体积的文件直接透传，不进 Worker 内存搬运
-const MAX_CACHE_BYTES = 50 * 1024 * 1024
+// 单文件缓存上限。缓存走独立的后台抓取并流式写入 R2，不经过 tee，因此不受 128MB 内存限制；
+// 150MB 以上的资产直接透传。
+const MAX_CACHE_BYTES = 150 * 1024 * 1024
 const MAX_LIST_PAGES = 10
 
 interface ResolvedDownload {
@@ -19,13 +19,6 @@ interface ResolvedDownload {
 
 function jsonError(status: number, message: string): Response {
   return Response.json({ error: message }, { status })
-}
-
-function buildRedirectTarget(env: Env, url: string): string | null {
-  const proxy = env.DOWNLOAD_PROXY?.trim()
-  if (!proxy) return null
-  if (proxy === 'direct') return url
-  return proxy.endsWith('/') ? `${proxy}${url}` : `${proxy}/${url}`
 }
 
 function githubHeaders(env: Env, extra: Record<string, string> = {}): Record<string, string> {
@@ -204,6 +197,24 @@ async function cacheToR2(
   await env.KV.put(COUNT_INDEX_KEY, JSON.stringify(counts))
 }
 
+// 独立抓取一遍上游再写 R2，避免 tee 在慢客户端下把整个文件积压在内存里
+async function cacheFromUpstream(
+  env: Env,
+  key: string,
+  url: string,
+  size: number,
+  contentType: string,
+): Promise<void> {
+  const response = await fetch(url, {
+    headers: githubHeaders(env, { Accept: 'application/octet-stream' }),
+    redirect: 'follow',
+  })
+  if (!response.ok || !response.body) {
+    throw new Error(`upstream responded ${response.status}`)
+  }
+  await cacheToR2(env, key, response.body, size, contentType)
+}
+
 export const onRequest: PagesFunction<Env> = async (context) => {
   const { env, params, request, waitUntil } = context
   const method = request.method
@@ -231,21 +242,6 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     return resolved.status === 404
       ? jsonError(404, 'File not found')
       : jsonError(502, 'GitHub API request failed')
-  }
-
-  const redirectTarget = buildRedirectTarget(env, resolved.url)
-  if (redirectTarget) {
-    waitUntil(
-      bumpCount(env, key).catch((error) => console.error('failed to count download', key, error)),
-    )
-    return new Response(null, {
-      status: 302,
-      headers: {
-        Location: redirectTarget,
-        'Cache-Control': 'no-store',
-        'X-Download-Mode': 'redirect',
-      },
-    })
   }
 
   let download: Response
@@ -290,12 +286,11 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     return new Response(download.body, { status: download.status, headers })
   }
 
-  const [clientStream, cacheStream] = download.body.tee()
   waitUntil(
-    cacheToR2(env, key, cacheStream, size, contentType).catch((error) => {
+    cacheFromUpstream(env, key, resolved.url, size, contentType).catch((error) => {
       console.error('failed to cache release asset', key, error)
     }),
   )
 
-  return new Response(clientStream, { status: download.status, headers })
+  return new Response(download.body, { status: download.status, headers })
 }
