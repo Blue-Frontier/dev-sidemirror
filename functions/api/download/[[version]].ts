@@ -8,8 +8,8 @@ interface Env {
 
 const COUNT_INDEX_KEY = 'counts:index'
 // 单文件缓存上限。缓存走独立的后台抓取并流式写入 R2，不经过 tee，因此不受 128MB 内存限制；
-// 150MB 以上的资产直接透传。
-const MAX_CACHE_BYTES = 150 * 1024 * 1024
+// 200MB 以上的资产直接透传。
+const MAX_CACHE_BYTES = 200 * 1024 * 1024
 const MAX_LIST_PAGES = 10
 
 interface ResolvedDownload {
