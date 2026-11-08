@@ -1,3 +1,9 @@
+<p align="center">
+  <a href="https://keepandroidopen.org">
+    <img src="assets/keep-android-open.svg" alt="Android will become a locked-down platform in 2027">
+  </a>
+</p>
+
 # Dev SideMirror
 
 基于 Vue 3 和 Cloudflare Pages 构建的 GitHub Releases 镜像服务。将发布文件缓存到 Cloudflare R2 存储中，提供简洁的 UI 来浏览和下载发布文件，支持自动检测操作系统和架构。
